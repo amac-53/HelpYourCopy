@@ -1,5 +1,11 @@
+<script setup lang="ts">
+import { RouterLink } from 'vue-router';
+</script>
+
 <template>
-    <div class="container row text-center m-5">
-        <h1>Assist Ur Copy</h1>
-    </div>
+    <nav class="navbar navbar-light bg-secondary mb-5">
+        <div class="container-fluid">
+            <RouterLink to="/" class="navbar-brand text-white">Help Your Copy</RouterLink>
+        </div>
+    </nav>
 </template>
