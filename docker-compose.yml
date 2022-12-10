@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  frontend:
+    container_name: HYCfrontend
+    build: ./frontend
+    volumes:
+      - ./frontend:/frontend
+      - front_node_modules:/frontend/node_modules
+    ports:
+      - 5173:5173
+
+  backend:
+    container_name: HYCbackend
+    build: ./backend
+    volumes:
+      - ./backend:/backend
+    ports:
+      - 8080:8080
+      
+volumes:
+  front_node_modules:
