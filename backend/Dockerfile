@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y ffmpeg
 RUN pip install -U pip
 RUN pip install spleeter
 # other packages
-RUN pip install matplotlib librosa "fastapi[all]"
+RUN pip install matplotlib librosa "fastapi[all]" yt-dlp
 WORKDIR /backend
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]

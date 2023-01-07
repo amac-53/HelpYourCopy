@@ -1,18 +1,25 @@
-<!-- アップロード部分 -->
 <script setup lang="ts">
 import axios from 'axios';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useStoreFile } from '@/stores/file';
+import { useStoreURL } from  '@/stores/URL';
 
 const router = useRouter();
+const file = useStoreFile();
+const domain = useStoreURL();
 
 const loading = ref(false);
 const uploadedFile = ref('');
 const fileURL = ref('');
+const radio = ref('solo');
+
 
 // アップロードされたときの処理
 const handleChangeFile = (e) => {
   uploadedFile.value = e.target.files[0];
+  file.name = e.target.files[0].name;
+  console.log(file.name);
   // file参照のための一時的なURLを生成
   fileURL.value = URL.createObjectURL(uploadedFile.value);
 }
@@ -29,7 +36,13 @@ const uploading = async() => {
   // post
   axios.defaults.xsrfCookieName = 'csrftoken'
   axios.defaults.xsrfHeaderName = "X-CSRFTOKEN"
-  axios.post('http://127.0.0.1:8080/uploadfile/', formData)
+
+  // query
+  const query = 'objective=' + radio.value
+  const URL =  domain.getURL() + 'uploadfile?' + query
+  console.log(URL);
+
+  axios.post(URL, formData)
       .then(res => {
           loading.value = false;
           console.log(res.data);
@@ -56,7 +69,7 @@ const uploading = async() => {
         <div id="loading">
           <div class="d-flex justify-content-center text-white mt-5">
             解析には数分かかる場合があります
-            気長にお待ちください（すみません）
+            しばらくお待ちください
           </div>
           <div class="loading">
             <div class="obj"></div>
@@ -73,42 +86,45 @@ const uploading = async() => {
 
       <!-- loading falseのとき -->
       <div v-show="!loading" key="notloader">
-        <div class="container">
-          <div class="d-flex justify-content-center">
-            <h1>耳コピのおとも</h1>
-          </div>
-        </div>
+          <div class="card border-0">
+            <img class="card-img rounded-0" src="../assets/img/sunset_blurred.jpg" alt="">
+            <div class="card-img-overlay text-light">
+              <p class="m-5">
+                  <h1 class="m-3">耳コピのおともに</h1>
+                  <p>特定の和音部分を切り出したファイル解析を行います</p>
+              </p>
 
-        <!-- ファイル選択 -->
-        <div class="container">
-          <div class="row justify-content-center m-5">
-            
-            <!-- ファイル選択 -->
-            <div class="container m-5">
-                <div class="row justify-content-center m-3">
-                    ファイルを選択してください
+              <div class="container">
+                <div class="row justify-content-center m-5">            
+                  <!-- ファイル選択 -->
+                  <div class="container m-5">
+                      <div class="row justify-content-center m-3">
+                          解析するファイルを選択してください (mp3, wavファイルのみ可)
+                          <p>ファイル切り出しにおすすめのサイト：https://mp3cut.net/ja/</p>
+                      </div>
+                      <div class="input-group mb-3">
+                          <input type="file" class="form-control" accept=".wav, .mp3" @change="handleChangeFile">
+                      </div>
+                  </div>
+
+                  <div v-if="fileURL" class="container m-3">
+                    <!-- 確認用の再生ボタン -->
+                    <div class="row justify-content-center m-3">
+                      選択したファイル（和音）を再生して確認してください
+                    </div>
+                    <div class="row justify-content-center mb-5">
+                        <audio controls :src="fileURL"></audio>
+                    </div>
+
+                    <!-- クリックでページ遷移 -->
+                    <div v-if="uploadedFile" class="d-flex justify-content-center m-5">
+                      <input @click="uploading" class="btn btn-light" type="button" value="解析する" />
+                    </div>
+                  </div>
                 </div>
-                <div class="input-group mb-3">
-                    <input type="file" class="form-control" accept=".wav, .mp3" @change="handleChangeFile">
-                </div>
-            </div>
-
-            <!-- 確認用の再生ボタン -->
-            <div v-if="fileURL" class="container m-5">
-              <div class="row justify-content-center">
-                確認用
-              </div>
-              <div class="row justify-content-center">
-                  <audio controls :src="fileURL"></audio>
-              </div>
-            </div>
-
-            <!-- クリックでページ遷移 -->
-            <div v-if="uploadedFile" class="d-flex justify-content-center m-5">
-              <input @click="uploading" class="btn btn-secondary" type="button" value="解析する" />
+              </div> 
             </div>
           </div>
-        </div>
       </div>
     </transition-group>
   </div>
@@ -116,6 +132,14 @@ const uploading = async() => {
 
 
 <style scoped>
+/* カードの上に文字 */
+.card-img-overlay{
+  padding: 0;
+  /* top: calc(50% - 0.5rem); */
+  text-align: center;
+  font-weight: bold;
+}
+
 /* ローディング画面 */
 .loader {
   position: absolute;
@@ -123,6 +147,7 @@ const uploading = async() => {
   top: 0;
   z-index: 1080;
 }
+
 #loading {
   width: 100vw;
   height: 100vh;
@@ -143,7 +168,7 @@ const uploading = async() => {
 }
 .obj{
     width: 5px;
-    height: 40px;
+    height: 60px;
     background: white;
     margin: 0 3px;
     border-radius: 10px;
@@ -170,12 +195,13 @@ const uploading = async() => {
 .obj:nth-child(8){
     animation-delay: 0.7s;
 }
+
 @keyframes loading{
     0%{
         height: 0;
     }
     50%{
-        height: 40px;
+        height: 60px;
     }
     100%{
         height: 0;
